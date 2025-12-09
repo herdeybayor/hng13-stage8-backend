@@ -1,11 +1,11 @@
-import { IsString, IsNumber, IsObject, IsEnum, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNumber, IsOptional, IsObject } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 class WebhookDataDto {
-  @ApiProperty({ example: 123456 })
+  @ApiPropertyOptional({ example: 123456 })
   @IsNumber()
-  id: number;
+  @IsOptional()
+  id?: number;
 
   @ApiProperty({ example: 'success' })
   @IsString()
@@ -19,15 +19,18 @@ class WebhookDataDto {
   @IsNumber()
   amount: number;
 
-  @ApiProperty({ example: 'user@example.com' })
-  @IsString()
-  customer: {
-    email: string;
-  };
-
-  @ApiProperty({ example: {} })
+  @ApiPropertyOptional({ example: { email: 'user@example.com' } })
   @IsObject()
-  metadata: Record<string, any>;
+  @IsOptional()
+  customer?: any;
+
+  @ApiPropertyOptional({ example: {} })
+  @IsObject()
+  @IsOptional()
+  metadata?: Record<string, any>;
+
+  // Allow all other Paystack fields without validation
+  [key: string]: any;
 }
 
 export class WebhookPayloadDto {
@@ -36,7 +39,6 @@ export class WebhookPayloadDto {
   event: string;
 
   @ApiProperty({ type: WebhookDataDto })
-  @ValidateNested()
-  @Type(() => WebhookDataDto)
+  @IsObject()
   data: WebhookDataDto;
 }
