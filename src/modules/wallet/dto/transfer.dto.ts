@@ -13,11 +13,11 @@ export class TransferDto {
   wallet_number: string;
 
   @ApiProperty({
-    description: 'Transfer amount in the smallest currency unit (kobo for NGN)',
-    example: 300000,
-    minimum: 1,
+    description: 'Transfer amount in NGN (Naira). Decimals allowed for kobo precision.',
+    example: 3000,
+    minimum: 0.01,
   })
   @IsNumber()
-  @Min(1, { message: 'Transfer amount must be at least 1' })
+  @Min(0.01, { message: 'Transfer amount must be at least 0.01 NGN' })
   amount: number;
 }

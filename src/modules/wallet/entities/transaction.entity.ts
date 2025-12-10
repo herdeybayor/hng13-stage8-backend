@@ -36,6 +36,10 @@ export class Transaction {
   @Column({ type: 'varchar', length: 20 })
   type: TransactionType;
 
+  /**
+   * Transaction amount stored in smallest currency unit (kobo for NGN)
+   * Internal storage uses kobo, API responses convert to Naira
+   */
   @Column({ type: 'decimal', precision: 15, scale: 2 })
   amount: number;
 
@@ -48,9 +52,15 @@ export class Transaction {
   @Column({ type: 'jsonb', nullable: true })
   metadata: Record<string, any>;
 
+  /**
+   * Wallet balance before transaction in smallest currency unit (kobo for NGN)
+   */
   @Column({ name: 'balance_before', type: 'decimal', precision: 15, scale: 2, nullable: true })
   balanceBefore: number;
 
+  /**
+   * Wallet balance after transaction in smallest currency unit (kobo for NGN)
+   */
   @Column({ name: 'balance_after', type: 'decimal', precision: 15, scale: 2, nullable: true })
   balanceAfter: number;
 

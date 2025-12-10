@@ -32,7 +32,7 @@ export class WalletController {
     type: BalanceResponseDto,
     schema: {
       example: {
-        balance: 15000.50,
+        balance: 150.50,
         walletNumber: '4123456789012',
       },
     },
@@ -49,7 +49,7 @@ export class WalletController {
     const { balance, walletNumber } = await this.walletService.getBalance(user.userId);
 
     return {
-      balance,
+      balance: balance / 100, // Convert kobo to Naira
       walletNumber,
     };
   }
@@ -83,26 +83,26 @@ export class WalletController {
         {
           id: 'uuid-here',
           type: 'deposit',
-          amount: 5000,
+          amount: 50,
           status: 'success',
           reference: 'ref_abc123',
           metadata: null,
-          balanceBefore: 10000,
-          balanceAfter: 15000,
+          balanceBefore: 100,
+          balanceAfter: 150,
           createdAt: '2025-12-09T10:00:00Z',
         },
         {
           id: 'uuid-here-2',
           type: 'transfer_out',
-          amount: 3000,
+          amount: 30,
           status: 'success',
           reference: null,
           metadata: {
             recipientWalletNumber: '4987654321098',
             recipientEmail: 'recipient@example.com',
           },
-          balanceBefore: 15000,
-          balanceAfter: 12000,
+          balanceBefore: 150,
+          balanceAfter: 120,
           createdAt: '2025-12-09T11:00:00Z',
         },
       ],
@@ -130,12 +130,12 @@ export class WalletController {
     return transactions.map((tx) => ({
       id: tx.id,
       type: tx.type,
-      amount: Number(tx.amount),
+      amount: Number(tx.amount) / 100, // Convert kobo to Naira
       status: tx.status,
       reference: tx.reference,
       metadata: tx.metadata,
-      balanceBefore: tx.balanceBefore ? Number(tx.balanceBefore) : undefined,
-      balanceAfter: tx.balanceAfter ? Number(tx.balanceAfter) : undefined,
+      balanceBefore: tx.balanceBefore ? Number(tx.balanceBefore) / 100 : undefined, // Convert kobo to Naira
+      balanceAfter: tx.balanceAfter ? Number(tx.balanceAfter) / 100 : undefined, // Convert kobo to Naira
       createdAt: tx.createdAt,
     }));
   }
@@ -154,9 +154,9 @@ export class WalletController {
       example: {
         senderTransactionId: 'uuid-here',
         recipientTransactionId: 'uuid-here-2',
-        amount: 3000,
+        amount: 30,
         recipientWalletNumber: '4987654321098',
-        senderBalanceAfter: 12000,
+        senderBalanceAfter: 120,
         createdAt: '2025-12-09T11:00:00Z',
       },
     },
@@ -177,18 +177,21 @@ export class WalletController {
     @CurrentUser() user: RequestUser,
     @Body() transferDto: TransferDto,
   ): Promise<TransferResponseDto> {
+    // Convert Naira to kobo (smallest currency unit)
+    const amountInKobo = Math.round(transferDto.amount * 100);
+
     const { senderTransaction, recipientTransaction } = await this.walletService.transferFunds(
       user.userId,
       transferDto.wallet_number,
-      transferDto.amount,
+      amountInKobo,
     );
 
     return {
       senderTransactionId: senderTransaction.id,
       recipientTransactionId: recipientTransaction.id,
-      amount: Number(senderTransaction.amount),
+      amount: Number(senderTransaction.amount) / 100, // Convert back to Naira for response
       recipientWalletNumber: transferDto.wallet_number,
-      senderBalanceAfter: Number(senderTransaction.balanceAfter),
+      senderBalanceAfter: Number(senderTransaction.balanceAfter) / 100, // Convert back to Naira
       createdAt: senderTransaction.createdAt,
     };
   }

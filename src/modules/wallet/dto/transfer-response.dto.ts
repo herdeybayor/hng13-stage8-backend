@@ -14,8 +14,8 @@ export class TransferResponseDto {
   recipientTransactionId: string;
 
   @ApiProperty({
-    description: 'Transfer amount',
-    example: 3000,
+    description: 'Transfer amount in NGN (Naira)',
+    example: 30,
     type: Number,
   })
   amount: number;
@@ -27,8 +27,8 @@ export class TransferResponseDto {
   recipientWalletNumber: string;
 
   @ApiProperty({
-    description: 'Sender balance after transfer',
-    example: 12000,
+    description: 'Sender balance after transfer in NGN (Naira)',
+    example: 120,
     type: Number,
   })
   senderBalanceAfter: number;

@@ -88,17 +88,20 @@ export class PaystackController {
     @CurrentUser() user: RequestUser,
     @Body() depositDto: DepositDto,
   ): Promise<InitializeResponseDto> {
+    // Convert Naira to kobo (smallest currency unit for Paystack)
+    const amountInKobo = Math.round(depositDto.amount * 100);
+
     // Initialize Paystack transaction
     const paystackData = await this.paystackService.initializeTransaction(
       user.email,
-      depositDto.amount,
+      amountInKobo,
       { userId: user.userId },
     );
 
-    // Create pending transaction in database
+    // Create pending transaction in database (store in kobo for now)
     await this.walletService.createPendingDeposit(
       user.userId,
-      depositDto.amount,
+      amountInKobo,
       paystackData.reference,
     );
 
@@ -221,9 +224,9 @@ export class PaystackController {
       example: {
         reference: 'ref_abc123xyz',
         status: 'success',
-        amount: 5000,
+        amount: 50,
         createdAt: '2025-12-09T10:00:00Z',
-        balanceAfter: 15000,
+        balanceAfter: 150,
       },
     },
   })
@@ -247,9 +250,9 @@ export class PaystackController {
     return {
       reference: transaction.reference!,
       status: transaction.status,
-      amount: Number(transaction.amount),
+      amount: Number(transaction.amount) / 100, // Convert kobo to Naira
       createdAt: transaction.createdAt,
-      balanceAfter: transaction.balanceAfter ? Number(transaction.balanceAfter) : undefined,
+      balanceAfter: transaction.balanceAfter ? Number(transaction.balanceAfter) / 100 : undefined, // Convert kobo to Naira
     };
   }
 }

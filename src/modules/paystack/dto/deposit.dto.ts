@@ -3,13 +3,13 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class DepositDto {
   @ApiProperty({
-    description: 'Deposit amount in the smallest currency unit (kobo for NGN)',
-    example: 500000,
-    minimum: 100,
-    maximum: 10000000,
+    description: 'Deposit amount in NGN (Naira). Decimals allowed for kobo precision.',
+    example: 5000,
+    minimum: 1,
+    maximum: 100000,
   })
   @IsNumber()
-  @Min(100, { message: 'Minimum deposit amount is 100 (1 NGN)' })
-  @Max(10000000, { message: 'Maximum deposit amount is 10,000,000 (100,000 NGN)' })
+  @Min(1, { message: 'Minimum deposit amount is 1 NGN' })
+  @Max(100000, { message: 'Maximum deposit amount is 100,000 NGN' })
   amount: number;
 }

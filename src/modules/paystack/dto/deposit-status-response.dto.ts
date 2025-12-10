@@ -16,8 +16,8 @@ export class DepositStatusResponseDto {
   status: TransactionStatus;
 
   @ApiProperty({
-    description: 'Deposit amount',
-    example: 5000,
+    description: 'Deposit amount in NGN (Naira)',
+    example: 50,
     type: Number,
   })
   amount: number;
@@ -30,8 +30,8 @@ export class DepositStatusResponseDto {
   createdAt: Date;
 
   @ApiProperty({
-    description: 'Wallet balance after transaction (if successful)',
-    example: 15000,
+    description: 'Wallet balance after transaction (if successful) in NGN (Naira)',
+    example: 150,
     required: false,
     type: Number,
   })

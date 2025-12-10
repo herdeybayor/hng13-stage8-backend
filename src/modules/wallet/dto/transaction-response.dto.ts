@@ -16,8 +16,8 @@ export class TransactionResponseDto {
   type: TransactionType;
 
   @ApiProperty({
-    description: 'Transaction amount',
-    example: 5000,
+    description: 'Transaction amount in NGN (Naira)',
+    example: 50,
     type: Number,
   })
   amount: number;
@@ -44,16 +44,16 @@ export class TransactionResponseDto {
   metadata?: Record<string, any>;
 
   @ApiProperty({
-    description: 'Wallet balance before transaction',
-    example: 10000,
+    description: 'Wallet balance before transaction in NGN (Naira)',
+    example: 100,
     required: false,
     type: Number,
   })
   balanceBefore?: number;
 
   @ApiProperty({
-    description: 'Wallet balance after transaction',
-    example: 15000,
+    description: 'Wallet balance after transaction in NGN (Naira)',
+    example: 150,
     required: false,
     type: Number,
   })

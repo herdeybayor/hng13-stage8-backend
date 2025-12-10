@@ -26,6 +26,10 @@ export class Wallet {
   @Column({ name: 'wallet_number', unique: true, length: 13 })
   walletNumber: string;
 
+  /**
+   * Wallet balance stored in smallest currency unit (kobo for NGN)
+   * Internal storage uses kobo, API responses convert to Naira
+   */
   @Column({ type: 'decimal', precision: 15, scale: 2, default: 0 })
   balance: number;
 
