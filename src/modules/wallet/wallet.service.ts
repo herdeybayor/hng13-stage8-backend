@@ -229,12 +229,23 @@ export class WalletService {
       const recipientWallet = await manager.findOne(Wallet, {
         where: { walletNumber: recipientWalletNumber },
         lock: { mode: 'pessimistic_write' },
-        relations: ['user'], // Need user for metadata
       });
 
       if (!recipientWallet) {
         throw new NotFoundException(`Recipient wallet not found: ${recipientWalletNumber}`);
       }
+
+      // Load recipient user separately (after lock to avoid LEFT JOIN with FOR UPDATE)
+      const recipientUser = await manager.findOne(Wallet, {
+        where: { id: recipientWallet.id },
+        relations: ['user'],
+      });
+
+      // Load sender user for metadata
+      const senderUser = await manager.findOne(Wallet, {
+        where: { id: senderWallet.id },
+        relations: ['user'],
+      });
 
       // 4. Prevent self-transfer
       if (senderWallet.id === recipientWallet.id) {
@@ -262,7 +273,7 @@ export class WalletService {
         balanceAfter: senderNewBalance,
         metadata: {
           recipientWalletNumber: recipientWallet.walletNumber,
-          recipientEmail: recipientWallet.user?.email,
+          recipientEmail: recipientUser?.user?.email,
         },
       });
       await manager.save(senderTransaction);
@@ -277,7 +288,7 @@ export class WalletService {
         balanceAfter: recipientNewBalance,
         metadata: {
           senderWalletNumber: senderWallet.walletNumber,
-          senderEmail: senderWallet.user?.email,
+          senderEmail: senderUser?.user?.email,
         },
       });
       await manager.save(recipientTransaction);
