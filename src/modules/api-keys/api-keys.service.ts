@@ -48,7 +48,7 @@ export class ApiKeysService {
 
     if (!match) {
       throw new BadRequestException(
-        'Invalid expiry format. Expected format: <number><unit> (e.g., 3D, 5H, 10M, 2Y)'
+        'Invalid expiry format. Expected format: <number><unit> (e.g., 3D, 5H, 10M, 2Y)',
       );
     }
 
@@ -255,7 +255,7 @@ export class ApiKeysService {
 
     if (!apiKey) {
       throw new NotFoundException(
-        'API key not found or does not belong to the user'
+        'API key not found or does not belong to the user',
       );
     }
 

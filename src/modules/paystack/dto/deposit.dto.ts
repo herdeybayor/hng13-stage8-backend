@@ -3,7 +3,8 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class DepositDto {
   @ApiProperty({
-    description: 'Deposit amount in NGN (Naira). Decimals allowed for kobo precision.',
+    description:
+      'Deposit amount in NGN (Naira). Decimals allowed for kobo precision.',
     example: 5000,
     minimum: 1,
     maximum: 100000,

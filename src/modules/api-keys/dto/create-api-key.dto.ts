@@ -1,4 +1,11 @@
-import { IsString, IsArray, IsEnum, ArrayMinSize, MaxLength, Matches } from 'class-validator';
+import {
+  IsString,
+  IsArray,
+  IsEnum,
+  ArrayMinSize,
+  MaxLength,
+  Matches,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Permission } from '../../../common/types/permission.enum';
 
@@ -24,7 +31,8 @@ export class CreateApiKeyDto {
   permissions: Permission[];
 
   @ApiProperty({
-    description: 'Expiry duration in format: <number><unit> where unit is H (hours), D (days), M (months), or Y (years). Case-insensitive.',
+    description:
+      'Expiry duration in format: <number><unit> where unit is H (hours), D (days), M (months), or Y (years). Case-insensitive.',
     example: '1Y',
     pattern: '^\\d+[HhDdMmYy]$',
   })

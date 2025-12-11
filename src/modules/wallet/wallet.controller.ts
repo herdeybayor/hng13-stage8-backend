@@ -1,5 +1,12 @@
 import { Controller, Get, Post, Body, UseGuards, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiSecurity, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiSecurity,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { WalletService } from './wallet.service';
 import { CombinedAuthGuard } from '../../common/guards/combined-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
@@ -24,7 +31,8 @@ export class WalletController {
   @Permissions(Permission.READ)
   @ApiOperation({
     summary: 'Get wallet balance',
-    description: 'Retrieve the current balance and wallet number for the authenticated user. Requires JWT token or API key with "read" permission.',
+    description:
+      'Retrieve the current balance and wallet number for the authenticated user. Requires JWT token or API key with "read" permission.',
   })
   @ApiResponse({
     status: 200,
@@ -32,7 +40,7 @@ export class WalletController {
     type: BalanceResponseDto,
     schema: {
       example: {
-        balance: 150.50,
+        balance: 150.5,
         walletNumber: '4123456789012',
       },
     },
@@ -45,8 +53,12 @@ export class WalletController {
     status: 404,
     description: 'Wallet not found',
   })
-  async getBalance(@CurrentUser() user: RequestUser): Promise<BalanceResponseDto> {
-    const { balance, walletNumber } = await this.walletService.getBalance(user.userId);
+  async getBalance(
+    @CurrentUser() user: RequestUser,
+  ): Promise<BalanceResponseDto> {
+    const { balance, walletNumber } = await this.walletService.getBalance(
+      user.userId,
+    );
 
     return {
       balance: balance / 100, // Convert kobo to Naira
@@ -58,7 +70,8 @@ export class WalletController {
   @Permissions(Permission.READ)
   @ApiOperation({
     summary: 'Get transaction history',
-    description: 'Retrieve paginated transaction history for the authenticated user. Includes deposits, transfers, and other wallet activities. Requires JWT token or API key with "read" permission.',
+    description:
+      'Retrieve paginated transaction history for the authenticated user. Includes deposits, transfers, and other wallet activities. Requires JWT token or API key with "read" permission.',
   })
   @ApiQuery({
     name: 'limit',
@@ -134,7 +147,9 @@ export class WalletController {
       status: tx.status,
       reference: tx.reference,
       metadata: tx.metadata,
-      balanceBefore: tx.balanceBefore ? Number(tx.balanceBefore) / 100 : undefined, // Convert kobo to Naira
+      balanceBefore: tx.balanceBefore
+        ? Number(tx.balanceBefore) / 100
+        : undefined, // Convert kobo to Naira
       balanceAfter: tx.balanceAfter ? Number(tx.balanceAfter) / 100 : undefined, // Convert kobo to Naira
       createdAt: tx.createdAt,
     }));
@@ -144,7 +159,8 @@ export class WalletController {
   @Permissions(Permission.TRANSFER)
   @ApiOperation({
     summary: 'Transfer funds to another wallet',
-    description: 'Transfer funds atomically to another wallet using the recipient\'s 13-digit wallet number. The transaction is atomic - both accounts are locked, debited/credited, and transaction records created in a single database transaction. Prevents race conditions and partial transfers. Requires JWT token or API key with "transfer" permission.',
+    description:
+      'Transfer funds atomically to another wallet using the recipient\'s 13-digit wallet number. The transaction is atomic - both accounts are locked, debited/credited, and transaction records created in a single database transaction. Prevents race conditions and partial transfers. Requires JWT token or API key with "transfer" permission.',
   })
   @ApiResponse({
     status: 200,
@@ -163,7 +179,8 @@ export class WalletController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad Request - Insufficient balance, invalid wallet number, or self-transfer',
+    description:
+      'Bad Request - Insufficient balance, invalid wallet number, or self-transfer',
   })
   @ApiResponse({
     status: 401,
@@ -180,11 +197,12 @@ export class WalletController {
     // Convert Naira to kobo (smallest currency unit)
     const amountInKobo = Math.round(transferDto.amount * 100);
 
-    const { senderTransaction, recipientTransaction } = await this.walletService.transferFunds(
-      user.userId,
-      transferDto.wallet_number,
-      amountInKobo,
-    );
+    const { senderTransaction, recipientTransaction } =
+      await this.walletService.transferFunds(
+        user.userId,
+        transferDto.wallet_number,
+        amountInKobo,
+      );
 
     return {
       senderTransactionId: senderTransaction.id,

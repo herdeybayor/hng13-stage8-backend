@@ -1,5 +1,19 @@
-import { Controller, Post, Get, Body, Query, UseGuards, BadRequestException } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Query,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { ApiKeysService } from './api-keys.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -21,7 +35,8 @@ export class ApiKeysController {
   @Post('create')
   @ApiOperation({
     summary: 'Create API key',
-    description: 'Create a new API key with specified permissions. Maximum 5 active keys per user. The API key is only shown once during creation - save it securely. Requires JWT authentication.',
+    description:
+      'Create a new API key with specified permissions. Maximum 5 active keys per user. The API key is only shown once during creation - save it securely. Requires JWT authentication.',
   })
   @ApiResponse({
     status: 200,
@@ -29,7 +44,8 @@ export class ApiKeysController {
     type: ApiKeyResponseDto,
     schema: {
       example: {
-        api_key: 'sk_live_abc123def456ghi789jkl012mno345pqr678stu901vwx234yz567',
+        api_key:
+          'sk_live_abc123def456ghi789jkl012mno345pqr678stu901vwx234yz567',
         id: 'uuid-here',
         name: 'Production API Key',
         permissions: ['deposit', 'transfer', 'read'],
@@ -40,7 +56,8 @@ export class ApiKeysController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad Request - Invalid permissions, expiry, or 5-key limit reached',
+    description:
+      'Bad Request - Invalid permissions, expiry, or 5-key limit reached',
   })
   @ApiResponse({
     status: 401,
@@ -70,7 +87,8 @@ export class ApiKeysController {
   @Post('rollover')
   @ApiOperation({
     summary: 'Rollover expired API key',
-    description: 'Create a new API key with the same permissions as an expired key. The expired key must belong to the authenticated user. The new key is only shown once - save it securely. Requires JWT authentication.',
+    description:
+      'Create a new API key with the same permissions as an expired key. The expired key must belong to the authenticated user. The new key is only shown once - save it securely. Requires JWT authentication.',
   })
   @ApiResponse({
     status: 200,
@@ -78,7 +96,8 @@ export class ApiKeysController {
     type: ApiKeyResponseDto,
     schema: {
       example: {
-        api_key: 'sk_live_xyz789abc012def345ghi678jkl901mno234pqr567stu890vwx123',
+        api_key:
+          'sk_live_xyz789abc012def345ghi678jkl901mno234pqr567stu890vwx123',
         id: 'uuid-new',
         name: 'Production API Key',
         permissions: ['deposit', 'transfer', 'read'],
@@ -122,7 +141,8 @@ export class ApiKeysController {
   @Get()
   @ApiOperation({
     summary: 'Get all API keys',
-    description: 'Retrieve all API keys with metadata for the authenticated user. Optionally filter by status (active/inactive/expired). Returns key metadata only - not the actual key values. Requires JWT authentication.',
+    description:
+      'Retrieve all API keys with metadata for the authenticated user. Optionally filter by status (active/inactive/expired). Returns key metadata only - not the actual key values. Requires JWT authentication.',
   })
   @ApiQuery({
     name: 'status',
@@ -150,7 +170,7 @@ export class ApiKeysController {
   ): Promise<ApiKeyMetadataResponseDto[]> {
     if (status && !['active', 'inactive', 'expired'].includes(status)) {
       throw new BadRequestException(
-        'Status must be one of: active, inactive, expired'
+        'Status must be one of: active, inactive, expired',
       );
     }
 
@@ -184,7 +204,8 @@ export class ApiKeysController {
   @Post('revoke')
   @ApiOperation({
     summary: 'Revoke an API key',
-    description: 'Revoke an active API key by setting its status to inactive. The key must belong to the authenticated user. Revoked keys cannot be used for authentication. Requires JWT authentication.',
+    description:
+      'Revoke an active API key by setting its status to inactive. The key must belong to the authenticated user. Revoked keys cannot be used for authentication. Requires JWT authentication.',
   })
   @ApiResponse({
     status: 200,

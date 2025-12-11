@@ -13,7 +13,8 @@ export class TransferDto {
   wallet_number: string;
 
   @ApiProperty({
-    description: 'Transfer amount in NGN (Naira). Decimals allowed for kobo precision.',
+    description:
+      'Transfer amount in NGN (Naira). Decimals allowed for kobo precision.',
     example: 3000,
     minimum: 0.01,
   })

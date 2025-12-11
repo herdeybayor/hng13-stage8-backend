@@ -30,7 +30,8 @@ export class DepositStatusResponseDto {
   createdAt: Date;
 
   @ApiProperty({
-    description: 'Wallet balance after transaction (if successful) in NGN (Naira)',
+    description:
+      'Wallet balance after transaction (if successful) in NGN (Naira)',
     example: 150,
     required: false,
     type: Number,

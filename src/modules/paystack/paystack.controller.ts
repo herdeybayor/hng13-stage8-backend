@@ -58,7 +58,8 @@ export class PaystackController {
   @ApiSecurity('API-Key')
   @ApiOperation({
     summary: 'Initialize deposit',
-    description: 'Initialize a Paystack deposit transaction. Returns a payment URL that the user should visit to complete the payment. Requires JWT token or API key with "deposit" permission.',
+    description:
+      'Initialize a Paystack deposit transaction. Returns a payment URL that the user should visit to complete the payment. Requires JWT token or API key with "deposit" permission.',
   })
   @ApiResponse({
     status: 200,
@@ -105,7 +106,9 @@ export class PaystackController {
       paystackData.reference,
     );
 
-    this.logger.log(`Deposit initialized for user ${user.userId}: ${paystackData.reference}`);
+    this.logger.log(
+      `Deposit initialized for user ${user.userId}: ${paystackData.reference}`,
+    );
 
     return {
       authorization_url: paystackData.authorization_url,
@@ -117,7 +120,8 @@ export class PaystackController {
   @Post('paystack/webhook')
   @ApiOperation({
     summary: 'Paystack webhook',
-    description: 'Handles Paystack payment webhooks. This endpoint validates the webhook signature, checks for idempotency, and credits the user wallet atomically. NO AUTHENTICATION REQUIRED - validated via signature.',
+    description:
+      'Handles Paystack payment webhooks. This endpoint validates the webhook signature, checks for idempotency, and credits the user wallet atomically. NO AUTHENTICATION REQUIRED - validated via signature.',
   })
   @ApiResponse({
     status: 200,
@@ -137,11 +141,17 @@ export class PaystackController {
     // 1. Validate signature
     const rawBody = req.rawBody;
     if (!rawBody) {
-      throw new BadRequestException('Raw body required for signature validation');
+      throw new BadRequestException(
+        'Raw body required for signature validation',
+      );
     }
 
     const secretKey = this.paystackService.getSecretKey();
-    const isValid = SignatureValidator.validateSignature(rawBody, signature, secretKey);
+    const isValid = SignatureValidator.validateSignature(
+      rawBody,
+      signature,
+      secretKey,
+    );
 
     if (!isValid) {
       this.logger.error('Invalid webhook signature');
@@ -168,7 +178,10 @@ export class PaystackController {
 
     try {
       // 4. Credit wallet atomically
-      const transaction = await this.walletService.creditWallet(reference, amount);
+      const transaction = await this.walletService.creditWallet(
+        reference,
+        amount,
+      );
 
       // 5. Store idempotency key
       const expiresAt = new Date();
@@ -176,7 +189,10 @@ export class PaystackController {
 
       const idempotencyKey = this.idempotencyKeyRepository.create({
         key: reference,
-        response: { message: 'Wallet credited successfully', transactionId: transaction.id },
+        response: {
+          message: 'Wallet credited successfully',
+          transactionId: transaction.id,
+        },
         expiresAt,
       });
       await this.idempotencyKeyRepository.save(idempotencyKey);
@@ -193,7 +209,10 @@ export class PaystackController {
 
       const idempotencyKey = this.idempotencyKeyRepository.create({
         key: reference,
-        response: { message: 'Processing failed', error: (error as Error).message },
+        response: {
+          message: 'Processing failed',
+          error: (error as Error).message,
+        },
         expiresAt,
       });
       await this.idempotencyKeyRepository.save(idempotencyKey);
@@ -214,7 +233,8 @@ export class PaystackController {
   })
   @ApiOperation({
     summary: 'Check deposit status',
-    description: 'Check the status of a deposit transaction by reference. This is READ-ONLY and does NOT credit the wallet. Requires JWT token or API key with "read" permission.',
+    description:
+      'Check the status of a deposit transaction by reference. This is READ-ONLY and does NOT credit the wallet. Requires JWT token or API key with "read" permission.',
   })
   @ApiResponse({
     status: 200,
@@ -241,7 +261,8 @@ export class PaystackController {
   async getDepositStatus(
     @Param('reference') reference: string,
   ): Promise<DepositStatusResponseDto> {
-    const transaction = await this.walletService.findTransactionByReference(reference);
+    const transaction =
+      await this.walletService.findTransactionByReference(reference);
 
     if (!transaction) {
       throw new NotFoundException('Transaction not found');
@@ -252,7 +273,9 @@ export class PaystackController {
       status: transaction.status,
       amount: Number(transaction.amount) / 100, // Convert kobo to Naira
       createdAt: transaction.createdAt,
-      balanceAfter: transaction.balanceAfter ? Number(transaction.balanceAfter) / 100 : undefined, // Convert kobo to Naira
+      balanceAfter: transaction.balanceAfter
+        ? Number(transaction.balanceAfter) / 100
+        : undefined, // Convert kobo to Naira
     };
   }
 }

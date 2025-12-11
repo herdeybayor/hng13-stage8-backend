@@ -29,7 +29,9 @@ export class Transaction {
   @Column({ name: 'wallet_id', type: 'uuid' })
   walletId: string;
 
-  @ManyToOne(() => Wallet, (wallet) => wallet.transactions, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Wallet, (wallet) => wallet.transactions, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'wallet_id' })
   wallet: Wallet;
 
@@ -55,13 +57,25 @@ export class Transaction {
   /**
    * Wallet balance before transaction in smallest currency unit (kobo for NGN)
    */
-  @Column({ name: 'balance_before', type: 'decimal', precision: 15, scale: 2, nullable: true })
+  @Column({
+    name: 'balance_before',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+  })
   balanceBefore: number;
 
   /**
    * Wallet balance after transaction in smallest currency unit (kobo for NGN)
    */
-  @Column({ name: 'balance_after', type: 'decimal', precision: 15, scale: 2, nullable: true })
+  @Column({
+    name: 'balance_after',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+  })
   balanceAfter: number;
 
   @CreateDateColumn({ name: 'created_at' })

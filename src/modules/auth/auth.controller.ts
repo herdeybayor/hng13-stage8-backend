@@ -13,7 +13,8 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   @ApiOperation({
     summary: 'Initiate Google OAuth flow',
-    description: 'Redirects to Google OAuth consent screen. After user grants permission, they will be redirected to the callback endpoint.',
+    description:
+      'Redirects to Google OAuth consent screen. After user grants permission, they will be redirected to the callback endpoint.',
   })
   @ApiResponse({
     status: 302,
@@ -27,7 +28,8 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   @ApiOperation({
     summary: 'Google OAuth callback',
-    description: 'Handles Google OAuth callback, creates/updates user, and returns JWT token. A wallet is automatically created for new users.',
+    description:
+      'Handles Google OAuth callback, creates/updates user, and returns JWT token. A wallet is automatically created for new users.',
   })
   @ApiResponse({
     status: 200,

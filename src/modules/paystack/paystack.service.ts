@@ -1,4 +1,8 @@
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
@@ -65,7 +69,9 @@ export class PaystackService {
         ),
       );
 
-      this.logger.log(`Transaction initialized: ${response.data.data.reference}`);
+      this.logger.log(
+        `Transaction initialized: ${response.data.data.reference}`,
+      );
       return response.data.data;
     } catch (error) {
       this.logger.error('Failed to initialize transaction', error);

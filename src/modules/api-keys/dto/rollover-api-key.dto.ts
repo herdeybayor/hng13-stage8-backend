@@ -11,7 +11,8 @@ export class RolloverApiKeyDto {
   expired_key_id: string;
 
   @ApiProperty({
-    description: 'Expiry duration in format: <number><unit> where unit is H (hours), D (days), M (months), or Y (years). Case-insensitive.',
+    description:
+      'Expiry duration in format: <number><unit> where unit is H (hours), D (days), M (months), or Y (years). Case-insensitive.',
     example: '1Y',
     pattern: '^\\d+[HhDdMmYy]$',
   })

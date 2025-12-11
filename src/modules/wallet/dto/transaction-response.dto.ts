@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TransactionType, TransactionStatus } from '../entities/transaction.entity';
+import {
+  TransactionType,
+  TransactionStatus,
+} from '../entities/transaction.entity';
 
 export class TransactionResponseDto {
   @ApiProperty({

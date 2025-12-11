@@ -1,8 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Wallet } from './entities/wallet.entity';
-import { Transaction, TransactionType, TransactionStatus } from './entities/transaction.entity';
+import {
+  Transaction,
+  TransactionType,
+  TransactionStatus,
+} from './entities/transaction.entity';
 import { ConfigService } from '@nestjs/config';
 import { InsufficientBalanceException } from './exceptions/insufficient-balance.exception';
 
@@ -45,7 +53,8 @@ export class WalletService {
 
   async createWallet(userId: string): Promise<Wallet> {
     const walletNumber = await this.generateUniqueWalletNumber();
-    const currency = this.configService.get<string>('app.defaultCurrency') || 'NGN';
+    const currency =
+      this.configService.get<string>('app.defaultCurrency') || 'NGN';
 
     const wallet = this.walletRepository.create({
       userId,
@@ -69,7 +78,9 @@ export class WalletService {
     });
   }
 
-  async getBalance(userId: string): Promise<{ balance: number; walletNumber: string }> {
+  async getBalance(
+    userId: string,
+  ): Promise<{ balance: number; walletNumber: string }> {
     const wallet = await this.findByUserId(userId);
 
     if (!wallet) {
@@ -137,7 +148,10 @@ export class WalletService {
    * @param verifiedAmount - Verified amount from Paystack
    * @returns Updated transaction
    */
-  async creditWallet(reference: string, verifiedAmount: number): Promise<Transaction> {
+  async creditWallet(
+    reference: string,
+    verifiedAmount: number,
+  ): Promise<Transaction> {
     return this.dataSource.transaction(async (manager) => {
       // 1. Find the pending transaction
       const transaction = await manager.findOne(Transaction, {
@@ -190,7 +204,9 @@ export class WalletService {
    * Find transaction by reference
    * @param reference - Payment reference
    */
-  async findTransactionByReference(reference: string): Promise<Transaction | null> {
+  async findTransactionByReference(
+    reference: string,
+  ): Promise<Transaction | null> {
     return this.transactionRepository.findOne({
       where: { reference },
     });
@@ -207,7 +223,10 @@ export class WalletService {
     senderUserId: string,
     recipientWalletNumber: string,
     amount: number,
-  ): Promise<{ senderTransaction: Transaction; recipientTransaction: Transaction }> {
+  ): Promise<{
+    senderTransaction: Transaction;
+    recipientTransaction: Transaction;
+  }> {
     return this.dataSource.transaction(async (manager) => {
       // 1. Lock sender wallet (SELECT FOR UPDATE)
       const senderWallet = await manager.findOne(Wallet, {
@@ -232,7 +251,9 @@ export class WalletService {
       });
 
       if (!recipientWallet) {
-        throw new NotFoundException(`Recipient wallet not found: ${recipientWalletNumber}`);
+        throw new NotFoundException(
+          `Recipient wallet not found: ${recipientWalletNumber}`,
+        );
       }
 
       // Load recipient user separately (after lock to avoid LEFT JOIN with FOR UPDATE)
