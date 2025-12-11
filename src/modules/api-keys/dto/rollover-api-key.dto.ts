@@ -1,4 +1,4 @@
-import { IsString, IsUUID, IsIn } from 'class-validator';
+import { IsString, IsUUID, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RolloverApiKeyDto {
@@ -11,11 +11,13 @@ export class RolloverApiKeyDto {
   expired_key_id: string;
 
   @ApiProperty({
-    description: 'Expiry duration for the new key (1H, 1D, 1M, 1Y)',
+    description: 'Expiry duration in format: <number><unit> where unit is H (hours), D (days), M (months), or Y (years). Case-insensitive.',
     example: '1Y',
-    enum: ['1H', '1D', '1M', '1Y'],
+    pattern: '^\\d+[HhDdMmYy]$',
   })
   @IsString()
-  @IsIn(['1H', '1D', '1M', '1Y'], { message: 'Expiry must be one of: 1H, 1D, 1M, 1Y' })
+  @Matches(/^\d+[HhDdMmYy]$/, {
+    message: 'Expiry must be in format: <number><unit> (e.g., 3D, 5H, 10M, 2Y)',
+  })
   expiry: string;
 }

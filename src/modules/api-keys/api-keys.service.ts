@@ -38,23 +38,36 @@ export class ApiKeysService {
 
   /**
    * Calculate expiry timestamp from expiry string
-   * @param expiry - Expiry string (1H, 1D, 1M, 1Y)
+   * @param expiry - Expiry string in format <number><unit> (e.g., 3D, 5H, 10M, 2Y)
    * @returns Expiry Date
    */
   private calculateExpiry(expiry: string): Date {
+    // Parse format: <number><unit> where unit is H/h, D/d, M/m, Y/y
+    const regex = /^(\d+)([HhDdMmYy])$/;
+    const match = expiry.match(regex);
+
+    if (!match) {
+      throw new BadRequestException(
+        'Invalid expiry format. Expected format: <number><unit> (e.g., 3D, 5H, 10M, 2Y)'
+      );
+    }
+
+    const value = parseInt(match[1], 10);
+    const unit = match[2].toUpperCase();
+
     const now = new Date();
 
-    switch (expiry) {
-      case '1H':
-        return new Date(now.getTime() + 60 * 60 * 1000); // 1 hour
-      case '1D':
-        return new Date(now.getTime() + 24 * 60 * 60 * 1000); // 1 day
-      case '1M':
-        return new Date(now.setMonth(now.getMonth() + 1)); // 1 month
-      case '1Y':
-        return new Date(now.setFullYear(now.getFullYear() + 1)); // 1 year
+    switch (unit) {
+      case 'H':
+        return new Date(now.getTime() + value * 60 * 60 * 1000);
+      case 'D':
+        return new Date(now.getTime() + value * 24 * 60 * 60 * 1000);
+      case 'M':
+        return new Date(now.setMonth(now.getMonth() + value));
+      case 'Y':
+        return new Date(now.setFullYear(now.getFullYear() + value));
       default:
-        throw new BadRequestException('Invalid expiry format');
+        throw new BadRequestException('Invalid expiry unit');
     }
   }
 
@@ -200,5 +213,59 @@ export class ApiKeysService {
     }
 
     return null;
+  }
+
+  /**
+   * Get all API keys for a user with optional status filtering
+   * @param userId - User ID
+   * @param statusFilter - Optional status filter (active/inactive/expired)
+   * @returns Array of API keys
+   */
+  async getAllKeys(userId: string, statusFilter?: string): Promise<ApiKey[]> {
+    const queryBuilder = this.apiKeyRepository
+      .createQueryBuilder('apiKey')
+      .where('apiKey.userId = :userId', { userId })
+      .orderBy('apiKey.createdAt', 'DESC');
+
+    const now = new Date();
+
+    if (statusFilter === 'active') {
+      queryBuilder
+        .andWhere('apiKey.isActive = :isActive', { isActive: true })
+        .andWhere('apiKey.expiresAt > :now', { now });
+    } else if (statusFilter === 'inactive') {
+      queryBuilder.andWhere('apiKey.isActive = :isActive', { isActive: false });
+    } else if (statusFilter === 'expired') {
+      queryBuilder.andWhere('apiKey.expiresAt <= :now', { now });
+    }
+
+    return queryBuilder.getMany();
+  }
+
+  /**
+   * Revoke an API key
+   * @param userId - User ID
+   * @param keyId - API key ID to revoke
+   * @returns Revoked API key entity
+   */
+  async revokeApiKey(userId: string, keyId: string): Promise<ApiKey> {
+    const apiKey = await this.apiKeyRepository.findOne({
+      where: { id: keyId, userId },
+    });
+
+    if (!apiKey) {
+      throw new NotFoundException(
+        'API key not found or does not belong to the user'
+      );
+    }
+
+    if (!apiKey.isActive) {
+      throw new BadRequestException('API key is already inactive');
+    }
+
+    apiKey.isActive = false;
+    await this.apiKeyRepository.save(apiKey);
+
+    return apiKey;
   }
 }

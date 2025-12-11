@@ -35,11 +35,23 @@ export class AllExceptionsFilter implements ExceptionFilter {
       message = exception.message;
     }
 
-    // Log the error
-    this.logger.error(
-      `${request.method} ${request.url} - Status: ${status} - ${message}`,
-      exception instanceof Error ? exception.stack : '',
+    // Skip logging for common browser-requested static files that don't exist
+    const ignoredPaths = [
+      '/favicon.ico',
+      '/apple-touch-icon.png',
+      '/apple-touch-icon-precomposed.png',
+    ];
+    const shouldLog = !(
+      status === HttpStatus.NOT_FOUND && ignoredPaths.includes(request.url)
     );
+
+    // Log the error (except for ignored paths)
+    if (shouldLog) {
+      this.logger.error(
+        `${request.method} ${request.url} - Status: ${status} - ${message}`,
+        exception instanceof Error ? exception.stack : '',
+      );
+    }
 
     response.status(status).json({
       statusCode: status,

@@ -1,4 +1,4 @@
-import { IsString, IsArray, IsEnum, ArrayMinSize, MaxLength, IsIn } from 'class-validator';
+import { IsString, IsArray, IsEnum, ArrayMinSize, MaxLength, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Permission } from '../../../common/types/permission.enum';
 
@@ -24,11 +24,13 @@ export class CreateApiKeyDto {
   permissions: Permission[];
 
   @ApiProperty({
-    description: 'Expiry duration (1H, 1D, 1M, 1Y)',
+    description: 'Expiry duration in format: <number><unit> where unit is H (hours), D (days), M (months), or Y (years). Case-insensitive.',
     example: '1Y',
-    enum: ['1H', '1D', '1M', '1Y'],
+    pattern: '^\\d+[HhDdMmYy]$',
   })
   @IsString()
-  @IsIn(['1H', '1D', '1M', '1Y'], { message: 'Expiry must be one of: 1H, 1D, 1M, 1Y' })
+  @Matches(/^\d+[HhDdMmYy]$/, {
+    message: 'Expiry must be in format: <number><unit> (e.g., 3D, 5H, 10M, 2Y)',
+  })
   expiry: string;
 }

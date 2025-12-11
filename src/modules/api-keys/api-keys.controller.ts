@@ -1,5 +1,5 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Post, Get, Body, Query, UseGuards, BadRequestException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ApiKeysService } from './api-keys.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -7,6 +7,9 @@ import type { RequestUser } from '../../common/decorators/current-user.decorator
 import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import { RolloverApiKeyDto } from './dto/rollover-api-key.dto';
 import { ApiKeyResponseDto } from './dto/api-key-response.dto';
+import { ApiKeyMetadataResponseDto } from './dto/api-key-metadata-response.dto';
+import { RevokeApiKeyDto } from './dto/revoke-api-key.dto';
+import { RevokeSuccessResponseDto } from './dto/revoke-success-response.dto';
 
 @ApiTags('API Keys')
 @Controller('keys')
@@ -113,6 +116,102 @@ export class ApiKeysController {
       permissions: apiKey.permissions,
       expires_at: apiKey.expiresAt,
       created_at: apiKey.createdAt,
+    };
+  }
+
+  @Get()
+  @ApiOperation({
+    summary: 'Get all API keys',
+    description: 'Retrieve all API keys with metadata for the authenticated user. Optionally filter by status (active/inactive/expired). Returns key metadata only - not the actual key values. Requires JWT authentication.',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: ['active', 'inactive', 'expired'],
+    description: 'Filter by key status',
+    example: 'active',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'API keys retrieved successfully',
+    type: [ApiKeyMetadataResponseDto],
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid status parameter',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or missing JWT token',
+  })
+  async getAllKeys(
+    @CurrentUser() user: RequestUser,
+    @Query('status') status?: string,
+  ): Promise<ApiKeyMetadataResponseDto[]> {
+    if (status && !['active', 'inactive', 'expired'].includes(status)) {
+      throw new BadRequestException(
+        'Status must be one of: active, inactive, expired'
+      );
+    }
+
+    const keys = await this.apiKeysService.getAllKeys(user.userId, status);
+    const now = new Date();
+
+    return keys.map((key) => {
+      let computedStatus: string;
+      if (key.isActive && key.expiresAt > now) {
+        computedStatus = 'active';
+      } else if (key.expiresAt <= now) {
+        computedStatus = 'expired';
+      } else {
+        computedStatus = 'inactive';
+      }
+
+      return {
+        id: key.id,
+        name: key.name,
+        key_prefix: key.keyPrefix,
+        permissions: key.permissions,
+        is_active: key.isActive,
+        status: computedStatus,
+        expires_at: key.expiresAt,
+        last_used_at: key.lastUsedAt,
+        created_at: key.createdAt,
+      };
+    });
+  }
+
+  @Post('revoke')
+  @ApiOperation({
+    summary: 'Revoke an API key',
+    description: 'Revoke an active API key by setting its status to inactive. The key must belong to the authenticated user. Revoked keys cannot be used for authentication. Requires JWT authentication.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'API key revoked successfully',
+    type: RevokeSuccessResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Key is already inactive or invalid key ID',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or missing JWT token',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'API key not found or does not belong to user',
+  })
+  async revokeApiKey(
+    @CurrentUser() user: RequestUser,
+    @Body() revokeDto: RevokeApiKeyDto,
+  ): Promise<RevokeSuccessResponseDto> {
+    await this.apiKeysService.revokeApiKey(user.userId, revokeDto.key_id);
+
+    return {
+      message: 'API key revoked successfully',
+      key_id: revokeDto.key_id,
     };
   }
 }

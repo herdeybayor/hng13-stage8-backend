@@ -59,7 +59,6 @@ async function bootstrap() {
     .addTag('Authentication', 'Google OAuth and JWT endpoints')
     .addTag('Wallet', 'Wallet balance and transaction history')
     .addTag('Deposits', 'Paystack deposit operations')
-    .addTag('Transfers', 'Wallet-to-wallet transfers')
     .addTag('API Keys', 'API key management for service access')
     .build();
 
